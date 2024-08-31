@@ -1,9 +1,14 @@
 class Tutor < ApplicationRecord
     belongs_to :course
-    before_ :course_id_exists
+    validates :first_name, presence: true
+    validates :last_name, presence: true
+    validates :course_id, presence: true
+    validate :validate_course_id
+    
+    private
+    
+    def validate_course_id
+        errors.add(:course_id, "is invalid") unless Course.exists?(self.course_id)
+      end
 
-
-    def course_id_exists
-        return false if Course.find_by_id(course_id).nil?
-    end
 end

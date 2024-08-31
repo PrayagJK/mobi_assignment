@@ -1,51 +1,49 @@
 class TutorsController < ApplicationController
-  before_action :set_tutor, only: %i[ show update destroy ]
+  before_action :set_course
+  before_action :set_tutor, only: [:show, :update, :destroy]
 
-  # GET /tutors
   def index
-    @tutors = Tutor.all
-
-    render json: @tutors
+    @tutors = @course.tutors
+    render json: TutorSerializer.new(@tutors).serialized_json
   end
 
-  # GET /tutors/1
   def show
-    render json: @tutor
+    render json: TutorSerializer.new(@tutor).serialized_json
   end
 
-  # POST /tutors
   def create
-    @tutor = Tutor.new(tutor_params)
-
+    @tutor = @course.tutors.new(tutor_params)
     if @tutor.save
-      render json: @tutor, status: :created, location: @tutor
+      render json: TutorSerializer.new(@tutor).serialized_json, status: :created
     else
-      render json: @tutor.errors, status: :unprocessable_entity
+      render json: { error: @tutor.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
-  # PATCH/PUT /tutors/1
   def update
     if @tutor.update(tutor_params)
-      render json: @tutor
+      render json: TutorSerializer.new(@tutor).serialized_json
     else
-      render json: @tutor.errors, status: :unprocessable_entity
+      render json: { error: @tutor.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
-  # DELETE /tutors/1
   def destroy
-    @tutor.destroy!
+    @tutor.destroy
+    head :no_content
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_tutor
-      @tutor = Tutor.find(params[:id])
-    end
 
-    # Only allow a list of trusted parameters through.
-    def tutor_params
-      params.fetch(:tutor, {}).permit(:first_name, :last_name, :specialization, :course_id)
-    end
+  def set_course
+    @course = Course.find(params[:course_id])
+  end
+
+  def set_tutor
+    @tutor = @course.tutors.find(params[:id])
+  end
+
+  def tutor_params
+    params.require(:tutor).permit(:name, :email)
+  end
 end
